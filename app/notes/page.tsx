@@ -1,21 +1,30 @@
-import { dehydrate, QueryClient } from "@tanstack/react-query";
-import Hydrate from "@/components/TanStackProvider/Hydrate";
+
+import { QueryClient, dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import NotesClient from "./Notes.client";
 import { getNotes } from "@/lib/api";
 
-export default async function NotesPage({ searchParams }: { searchParams: { page?: string; search?: string } }) {
-  const page = Number(searchParams?.page ?? 1);
-  const search = searchParams?.search ?? "";
+type SearchParams = { page?: string; search?: string };
+
+export default async function NotesPage({
+  searchParams,
+}: {
+  searchParams: Promise<SearchParams>;
+}) {
+  const { page: pageStr, search: rawSearch } = await searchParams;
+  const page = Number(pageStr ?? 1);
+  const search = rawSearch ?? "";
 
   const qc = new QueryClient();
   await qc.prefetchQuery({
     queryKey: ["notes", { page, search }],
-    queryFn: () => getNotes(search, page),
+    queryFn: () => getNotes({ page, search }),
   });
 
   return (
-    <Hydrate state={dehydrate(qc)}>
+    <HydrationBoundary state={dehydrate(qc)}>
       <NotesClient initialPage={page} initialSearch={search} />
-    </Hydrate>
+    </HydrationBoundary>
   );
 }
+
+

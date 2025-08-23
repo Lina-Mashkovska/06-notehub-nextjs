@@ -3,21 +3,30 @@
 import { useParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { fetchNoteById } from "@/lib/api";
+import type { Note } from "@/types/note";
 import css from "./NoteDetails.module.css";
 
 export default function NoteDetailsClient() {
   const { id } = useParams<{ id: string }>();
 
-  const idNum = Number(id);
-
-  const { data: note, isLoading, error } = useQuery({
-    queryKey: ["note", idNum],
-    queryFn: () => fetchNoteById(idNum),
-    enabled: Number.isFinite(idNum) && idNum > 0,
+  const {
+    data: note,
+    isLoading,
+    isError,
+    error,
+  } = useQuery<Note>({
+    queryKey: ["note", id],
+    queryFn: () => fetchNoteById(id),
+    enabled: typeof id === "string" && id.length > 0,
+    refetchOnMount: false,        
+    refetchOnWindowFocus: false, 
   });
 
   if (isLoading) return <p>Loading, please wait...</p>;
-  if (error || !note) return <p>Something went wrong.</p>;
+  if (isError || !note) {
+    const msg = error instanceof Error ? error.message : "Unknown error";
+    return <p>Something went wrong: {msg}</p>;
+  }
 
   return (
     <div className={css.container}>

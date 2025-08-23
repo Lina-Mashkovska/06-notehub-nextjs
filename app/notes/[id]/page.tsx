@@ -1,22 +1,25 @@
-import { dehydrate, QueryClient } from "@tanstack/react-query";
-import Hydrate from "@/components/TanStackProvider/Hydrate";
+
+import { QueryClient, dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import NoteDetailsClient from "./NoteDetails.client";
 import { getSingleNote } from "@/lib/api";
 
-export default async function NoteDetailsPage({ params }: { params: { id: string } }) {
-  const idNum = Number(params.id); 
+export default async function NoteDetailsPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params; 
 
   const qc = new QueryClient();
   await qc.prefetchQuery({
-    queryKey: ["note", idNum],         
-    queryFn: () => getSingleNote(idNum), 
+    queryKey: ["note", id],         
+    queryFn: () => getSingleNote(id),
   });
 
   return (
-    <Hydrate state={dehydrate(qc)}>
-      {}
+    <HydrationBoundary state={dehydrate(qc)}>
       <NoteDetailsClient />
-    </Hydrate>
+    </HydrationBoundary>
   );
 }
 

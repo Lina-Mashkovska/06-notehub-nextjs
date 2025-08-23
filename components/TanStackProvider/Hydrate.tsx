@@ -3,7 +3,7 @@
 import type { ReactNode } from "react";
 import { HydrationBoundary, type DehydratedState } from "@tanstack/react-query";
 
-export default function Hydrate({
+export default function HydrationBoundaryWrapper({
   state,
   children,
 }: {
@@ -12,3 +12,4 @@ export default function Hydrate({
 }) {
   return <HydrationBoundary state={state}>{children}</HydrationBoundary>;
 }
+
